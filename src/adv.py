@@ -1,29 +1,30 @@
-from item import Item
 from room import Room
 from player import Player
 
-direction_letter_name = {'n': 'North', 'e': 'East', 's': 'South', 'w': 'West'}
-direction_letters = direction_letter_name.keys()
-
+# Declare all the rooms
+# This is a dictionary, with keys being room names, and values 
+#~ being Room objects, which are created when this block is executed.
 room = {
-    'outside':  Room("Outside Cave Entrance",
+    'outside':  Room("outside",
                      "North of you, the cave mount beckons"),
 
-    'foyer':    Room("Foyer", """Dim light filters in from the south. Dusty
+    'foyer':    Room("foyer", """Dim light filters in from the south. Dusty
 passages run north and east."""),
 
-    'overlook': Room("Grand Overlook", """A steep cliff appears before you, falling
+    'overlook': Room("overlook", """A steep cliff appears before you, falling
 into the darkness. Ahead to the north, a light flickers in
 the distance, but there is no way across the chasm."""),
 
-    'narrow':   Room("Narrow Passage", """The narrow passage bends here from west
+    'narrow':   Room("narrow", """The narrow passage bends here from west
 to north. The smell of gold permeates the air."""),
 
-    'treasure': Room("Treasure Chamber", """You've found the long-lost treasure
+    'treasure': Room("treasure", """You've found the long-lost treasure
 chamber! Sadly, it has already been completely emptied by
 earlier adventurers. The only exit is to the south."""),
 }
 
+
+# Link rooms together
 room['outside'].n_to = room['foyer']
 room['foyer'].s_to = room['outside']
 room['foyer'].n_to = room['overlook']
@@ -33,96 +34,50 @@ room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
 
-item = {
-    'torch': Item('tiki', 'A Hawaiian-looking torch'),
-    'sword': Item('sword', 'A rusty sword'),
-    'jewel': Item('emerald', 'A shiny green rock'),
-    'nail': Item('nail', 'Just a nail'),
-    'flask': Item('flask', 'A flask with a mysterious liquid'),
-    'scroll': Item('scroll', 'A rolled up parchment'),
-    'bag': Item('coinbag', 'A leather pouch of shiny doubloons')
-}
+valid_directions = ['n', 's', 'e', 'w']
 
-# Assignments of items to rooms
-item_room_setup = [
-    ('outside', 'torch'),
-    ('foyer', 'sword'),
-    ('foyer', 'nail'),
-    ('foyer', 'flask'),
-    ('overlook', 'jewel'),
-    ('narrow', 'flask'),
-    ('narrow', 'scroll'),
-    ('treasure', 'bag')
-]
+#
+# Main
+#
 
-for pair in item_room_setup:
-    my_room = room[pair[0]]
-    my_item = item[pair[1]]
-    my_room.add_item(my_item)
+# Make a new player object that is currently in the 'outside' room.
 
-player_1 = Player(room['outside'])
+player_1 = Player()
+# instance is initialized with location outside.
 
 
-def print_hints():
-    print()
-    print("move commands (single letter) n, e, s, or w")
-    print("Or, 'get <thing>'', or 'drop <thing>'")
-    print("To quit, q")
-    print("Currently, lowercase only.")
+# Write a loop that:
+# Main game loop
+while True:
+    # * Prints the current room name
+    print(f'{player_1.name}, you are currently in the room named \'{player_1.current_room}\'')
 
+    # * Prints the current description (the textwrap module might be useful here).
+    print(room.get(player_1.current_room).description)
 
-def pick_up_thing(player, room, thing_name):
-    thing = room.remove(thing_name)
-    if thing:
-        # print(thing)
-        player.take(thing)
+    # * Waits for user input
+    command = input('What shall we do? ').split()[0]
 
+    # and decides what to do.
+    # If the user enters "q", quit the game.
+    if command == 'q':
+        print("You were splendid! We shall adventure again soon!")
+        break
 
-def drop_thing(player, room, thing_name):
-    thing = player.drop(thing_name)
-    if thing:
-        # print(thing)
-        room.add_item(thing)
+    # If the user enters a cardinal direction, attempt to move to the room there.
+    elif command in valid_directions:
+        print(f'So, you\'d like to go {command}, eh?')
 
-
-def game_loop():
-    while True:
-        this_room = player_1.current_room
-        this_room.describe()
-        player_1.describe()
-
-        commands = input('What shall we do?').split()
-        command_count = len(commands)
-
-        if command_count == 1:
-            action = commands[0]
-            if action == 'q':
-                print("You did super! See you again, soon!")
-                break
-
-            elif action in direction_letters:
-                if this_room.movement_is_possible(action):
-                    print(f'We boldly go {direction_letter_name[action]}!')
-                    player_1.move(action)
-                else:
-                    print(f'Stymied! There is no way to move {direction_letter_name[action]}!')
-            else:
-                print_hints()
-
-        elif command_count == 2:
-            if commands[0] == 'get':
-                thing = commands[1]
-                pick_up_thing(player_1, this_room, thing)
-                print ("You get the " + commands[1])
-            elif commands[0] == 'drop':
-                drop_thing(player_1, this_room, thing)
-                print ("You drop the " + commands[1])
-            else:
-                print_hints()
+        # check_whether_move_is_possible
+        movement_attribute = command + '_to'
+        if getattr(room.get(player_1.current_room), movement_attribute) is None:
+        # Print an error message if the movement isn't allowed.
+            print(f'It is impossible to go that direction from here.\n')
 
         else:
-            print_hints()
+            print(f'Very Well!  To the {command}!\n')
+            player_1.current_room = getattr(room.get(player_1.current_room), movement_attribute).name
+            print(player_1.current_room)
 
-
-def __main__():
-    game_loop()
+    else:
+        print("Currently, we must use one of (q, n, s, e, w).\n")
