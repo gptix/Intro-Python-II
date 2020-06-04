@@ -3,14 +3,27 @@
 # * description
 
 class Room:
-    def __init__(self, name, description, n_to=None, s_to=None, e_to=None, w_to=None):
+    def __init__(self, name, description, items=[]):
 #        super().__init__()
         self.name = name
         self.description = description
-        self.n_to = n_to
-        self.s_to = s_to
-        self.e_to = e_to
-        self.w_to = w_to
+        self.items = items
 
     def __str__(self):
-        return f'<Room - name: {self.name} - description: {self.description}>'
+        return f'<Room - name: {self.name} - description: {self.description}  room_items: {self.items}>'
+
+
+    def add_item(self, itm):
+        # print("In method\n")
+        # print(itm)
+        # print()
+        # print(f'Adding {itm.name} to {self.name}\n')
+        self.items.append(itm)
+
+
+
+    def describe_location(self):
+        # * Prints the current description (the textwrap module might be useful here).
+        print(f'{self.description}\n')
+        item_names = [itm.name for itm in self.items]
+        print(f'You see these items: {item_names}')

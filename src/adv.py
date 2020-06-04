@@ -1,5 +1,6 @@
 from room import Room
 from player import Player
+from item import Item
 
 # Declare all the rooms
 # This is a dictionary, with keys being room names, and values 
@@ -36,48 +37,102 @@ room['treasure'].s_to = room['narrow']
 
 valid_directions = ['n', 's', 'e', 'w']
 
-#
-# Main
-#
+item = {
+    'torch': Item('tiki', 'A Hawaiian-looking torch'),
+    'sword': Item('sword', 'A rusty sword'),
+    'jewel': Item('emerald', 'A shiny green rock'),
+    'nail': Item('nail', 'Just a nail'),
+    'flask': Item('flask', 'A flask with a mysterious liquid'),
+    'scroll': Item('scroll', 'A rolled up parchment'),
+    'bag': Item('coinbag', 'A leather pouch of shiny doubloons')
+}
 
-# Make a new player object that is currently in the 'outside' room.
+# Assignments of items to rooms
+item_room_setup = [
+    ('outside', 'torch'),
+    ('foyer', 'sword'),
+    ('foyer', 'nail'),
+    # ('foyer', 'flask'),
+    # ('overlook', 'jewel'),
+    # ('narrow', 'flask'),
+    # ('narrow', 'scroll'),
+    # ('treasure', 'bag')
+]
 
-player_1 = Player()
-# instance is initialized with location outside.
+for pair in item_room_setup:
+    my_room = room[pair[0]]
+    my_item = item[pair[1]]
+    my_room.add_item(my_item)
 
 
-# Write a loop that:
-# Main game loop
+
+initial_location = room.get('outside')
+player_1 = Player(initial_location)
+
+
+def get_user_input():
+    return  input('What shall we do? ').split()
+
+
+quit_commands = ['q', 'quit', 'cancel', 'end', 'bye', 'goodbye']
+move_commands = ['n', 's', 'e', 'w']
+get_verbs = ['g', 'get', 't', 'take']
+drop_verbs = ['d', 'drop']
+verbs = get_verbs + drop_verbs
+
+def find_input_format_problems(u_input):
+    input_length = len(u_input)
+    problems_exist = (input_length == 0 or 
+                    input_length > 2 or
+                    (input_length == 1 and (u_input[0] not in quit_commands) and (u_input[0] not in move_commands)) or
+                    (input_length == 2 and u_input[0] not in verbs))
+    return problems_exist
+
+
+def give_hints():
+    print('Valid commands:')
+    print(f"To quit: {', '.join(quit_commands)}")
+    print(f"To move: {', '.join(move_commands)}")
+    print("To get: g, get, t, take")
+    print("To drop: d, drop")
+    print("Currently, lowercase only.\n")
+
+def quit_game():
+    print("You did super! See you again, soon!")
+
+def identify_location():
+    print(f'{player_1.name}, you are currently in the room named \'{player_1.current_room.name}\'\n')
+
+
 while True:
-    # * Prints the current room name
-    print(f'{player_1.name}, you are currently in the room named \'{player_1.current_room}\'')
+#     # Describe situation
+    identify_location()
+    player_1.current_room.describe_location()
 
-    # * Prints the current description (the textwrap module might be useful here).
-    print(room.get(player_1.current_room).description)
+    # Ask for orders
+    u_input = get_user_input()
 
-    # * Waits for user input
-    command = input('What shall we do? ').split()[0]
+    # Check input - number of words, correct first word
+    if find_input_format_problems(u_input):
+        give_hints()
 
-    # and decides what to do.
-    # If the user enters "q", quit the game.
-    if command == 'q':
-        print("You were splendid! We shall adventure again soon!")
-        break
+    else: # we know there is a valid command.  We have not checked any thing to be getted or dropped
+        input_count = len(u_input)
 
-    # If the user enters a cardinal direction, attempt to move to the room there.
-    elif command in valid_directions:
-        print(f'So, you\'d like to go {command}, eh?')
+        if input_count == 1:
 
-        # check_whether_move_is_possible
-        movement_attribute = command + '_to'
-        if getattr(room.get(player_1.current_room), movement_attribute) is None:
-        # Print an error message if the movement isn't allowed.
-            print(f'It is impossible to go that direction from here.\n')
+            # We know it is a single=-word command
+            if u_input[0] in quit_commands:
+                quit_game()
+                break
 
-        else:
-            print(f'Very Well!  To the {command}!\n')
-            player_1.current_room = getattr(room.get(player_1.current_room), movement_attribute).name
-            print(player_1.current_room)
+            else: 
+                direction = u_input[0]
+                player_1.try_to_move(direction)
 
-    else:
-        print("Currently, we must use one of (q, n, s, e, w).\n")
+        else: # we know the command has two parts, and the first one is either get or drop
+            thing = u_input[1]
+            if u_input[0] in get_verbs:
+                player_1.try_to_get(thing)
+            else:
+                player_1.try_to_drop(thing)
