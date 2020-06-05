@@ -3,11 +3,21 @@
 # * description
 
 class Room:
-    def __init__(self, name, description, items=[]):
-#        super().__init__()
+#     def __init__(self, name, description, items=[]):
+# #        super().__init__()
+#         self.name = name
+#         self.description = description
+#         self.items = items
+    def __init__(self, name, description, items=None):
         self.name = name
         self.description = description
-        self.items = items
+        self.items = items if items is not None else []
+        #                  ↑↑  one line if statement ↑↑
+
+
+
+
+
 
     def __str__(self):
         return f'<Room - name: {self.name} - description: {self.description}  room_items: {self.items}>'

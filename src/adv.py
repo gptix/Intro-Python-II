@@ -47,6 +47,9 @@ item = {
     'bag': Item('coinbag', 'A leather pouch of shiny doubloons')
 }
 
+initial_location = room.get('outside')
+player_1 = Player(initial_location)
+
 # Assignments of items to rooms
 item_room_setup = [
     ('outside', 'torch'),
@@ -66,8 +69,7 @@ for pair in item_room_setup:
 
 
 
-initial_location = room.get('outside')
-player_1 = Player(initial_location)
+
 
 
 def get_user_input():
